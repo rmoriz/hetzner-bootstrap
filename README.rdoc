@@ -1,0 +1,33 @@
+= hetzner-bootstrap
+
+hetzner-bootstrap allows you to bootstrap a provisioned EQ Server from hetzner.de
+
+Requirements
+
+- get a webservice login (robots.your-server.de)
+- the ip address of the shipped systems
+
+== Installation
+
+<tt> gem install hetzner-bootstrap</tt>
+
+== Example
+
+<b>see example.rb for usage!</b>
+
+
+== WARNING!
+
+This is not an official Hetzner AG project.
+
+The gem and the author are not related to Hetzner AG!
+
+<b>Use at your very own risk! Satisfaction NOT guaranteed!</b>
+
+== Copyright
+
+Copyright (c) 2011 Moriz GmbH, Roland Moriz. See LICENSE for details.
+
+{Ruby on Rails Entwicklung}[http://moriz.de/] -> Moriz GmbH
+
+{Ruby on Rails Hosting}[http://rails.io/] -> Rails.io
