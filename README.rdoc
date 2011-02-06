@@ -4,8 +4,8 @@ hetzner-bootstrap allows you to bootstrap a provisioned EQ Server from hetzner.d
 
 Requirements
 
-- get a webservice login (robots.your-server.de)
-- the ip address of the shipped systems
+- get a webservice login from your customer panel (https://robot.your-server.de/)
+- the ip address of the shipped system(s)
 
 == Installation
 
