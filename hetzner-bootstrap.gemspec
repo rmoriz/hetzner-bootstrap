@@ -3,15 +3,14 @@ $:.push File.expand_path("../lib", __FILE__)
 require "hetzner/bootstrap/version"
 
 Gem::Specification.new do |s|
-  s.name        = "hetzner"
+  s.name        = "hetzner-bootstrap"
   s.version     = Hetzner::Bootstrap::VERSION
-  #s.version     = '0.0.1'
   s.platform    = Gem::Platform::RUBY
-  s.authors     = ["TODO: Write your name"]
-  s.email       = ["TODO: Write your email address"]
-  s.homepage    = ""
-  s.summary     = %q{TODO: Write a gem summary}
-  s.description = %q{TODO: Write a gem description}
+  s.authors     = ["Roland Moriz"]
+  s.email       = ["roland@moriz.de"]
+  s.homepage    = "http://moriz.de/opensource/hetzner-api"
+  s.summary     = %q{Easy bootstrapping of hetzner.de rootservers using hetzner-api}
+  s.description = %q{Easy bootstrapping of hetzner.de rootservers using hetzner-api}
 
   s.rubyforge_project = "hetzner"
 
