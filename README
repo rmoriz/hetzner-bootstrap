@@ -1,0 +1,9 @@
+hetzner-bootstrap allows you to bootstrap a provisioned EQ Server from hetzner.de
+
+Requirements
+
+- get a webservice login (robots.your-server.de)
+- the ip address of the shipped systems
+
+see example.rb for usage
+
