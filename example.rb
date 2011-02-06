@@ -30,7 +30,7 @@ IMAGE /root/images/Ubuntu-1010-maverick-64-minimal.tar.gz
 EOT
 
 post_install = <<EOT
-bundle exec knife bootstrap <%= hostname %> "role[base],role[kvm_host]" -x <%= login %> -P "<%= password %> --sudo -l debug
+knife bootstrap <%= ip %> -N <%= hostname %> "role[base],role[kvm_host]"
 EOT
 
 # duplicate entry for each system

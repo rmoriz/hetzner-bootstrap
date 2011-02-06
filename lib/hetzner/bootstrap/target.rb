@@ -139,7 +139,8 @@ module Hetzner
       def post_install(options = {})
         return unless @post_install
         post_install = render_post_install
-        `post_install`
+        puts "executing:\n #{post_install}"
+        `#{post_install}`
       end
 
       def render_template
