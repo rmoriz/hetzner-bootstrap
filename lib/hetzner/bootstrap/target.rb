@@ -60,7 +60,7 @@ module Hetzner
 
         if result.success?
           reset_retries
-          sleep 10
+          sleep 15
         elsif @retries > 3
           raise CantResetSystemError, result
         else
@@ -140,7 +140,7 @@ module Hetzner
         return unless @post_install
         post_install = render_post_install
         puts "executing:\n #{post_install}"
-        `#{post_install}`
+        puts `#{post_install}`
       end
 
       def render_template
