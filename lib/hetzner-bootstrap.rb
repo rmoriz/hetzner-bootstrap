@@ -1,5 +1,3 @@
-require 'benchmark'
-
 require 'hetzner-api'
 require 'hetzner/bootstrap/version'
 require 'hetzner/bootstrap/target'
