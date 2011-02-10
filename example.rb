@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+require "rubygems"
 require "hetzner-bootstrap"
 
 API_USERNAME="xxx"
