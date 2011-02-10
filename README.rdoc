@@ -15,7 +15,6 @@ Requirements
 
 <b>see example.rb for usage!</b>
 
-
 == WARNING!
 
 This is not an official Hetzner AG project.

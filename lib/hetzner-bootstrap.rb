@@ -1,4 +1,5 @@
 require 'benchmark'
+require 'logger'
 
 require 'hetzner-api'
 require 'hetzner/bootstrap/version'
@@ -9,21 +10,25 @@ module Hetzner
   class Bootstrap
     attr_accessor :targets
     attr_accessor :api
-    attr_accessor :use_threads
     attr_accessor :actions
+    attr_accessor :logger
 
     def initialize(options = {})
       @targets     = []
       @actions     = %w(enable_rescue_mode
                         reset
-                        wait_for_ssh
+                        wait_for_ssh_down
+                        wait_for_ssh_up
                         installimage
-                        wait_for_ssh
+                        reboot
+                        wait_for_ssh_down
+                        wait_for_ssh_up
                         verify_installation
                         copy_ssh_keys
                         post_install)
+      #@actions     = %w(wait_for_ssh_down)
       @api         = options[:api]
-      @use_threads = options[:use_threads] || true
+      @logger      = options[:logger] || Logger.new(STDOUT)
     end
 
     def add_target(param)
@@ -37,50 +42,31 @@ module Hetzner
     def <<(param)
       add_target param
     end
-    
+
     def bootstrap!(options = {})
-      threads = []
-
       @targets.each do |target|
-        target.use_api @api
-        
-        if uses_threads?
-          threads << Thread.new do
-            bootstrap_one_target! target
-          end
-        else
+        #fork do
+          target.use_api    @api
+          target.use_logger @logger
           bootstrap_one_target! target
-        end
+        #end
       end
-
-      finalize_threads(threads) if uses_threads?
+      #Process.waitall
     end
 
     def bootstrap_one_target!(target)
       actions = (target.actions || @actions)
       actions.each_with_index do |action, index|
-        
-        log target.ip, action, index, 'START'
+
+        loghack = "\b" * 24 # remove: "[bootstrap_one_target!] ".length
+        target.logger.info "#{loghack}[#{action}] #{sprintf "%-20s", "START"}"
         d = Benchmark.realtime do
           target.send action
         end
-
-        log target.ip, action, index, "FINISHED in #{sprintf "%.5f",d} seconds"
+        target.logger.info "#{loghack}[#{action}] FINISHED in #{sprintf "%.5f",d} seconds"
       end
     rescue => e
-      puts "something bad happend: #{e.class} #{e.message}"
-    end
-
-    def uses_threads?
-      @use_threads
-    end
-
-    def finalize_threads(threads)
-      threads.each { |t| t.join }
-    end
-
-    def log(where, what, index, message)
-      puts "[#{where}] #{what} #{' ' * (index * 4)}#{message}"
+      puts "something bad happened unexpectedly: #{e.class} => #{e.message}"
     end
   end
 end
