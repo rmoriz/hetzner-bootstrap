@@ -31,7 +31,7 @@ module Hetzner
         else
           raise NoTemplateProvidedError.new 'No imageinstall template provided.'
         end
-        
+
         options.each_pair do |k,v|
           self.send("#{k}=", v)
         end
@@ -83,21 +83,17 @@ module Hetzner
 
       def wait_for_ssh_down(options = {})
         loop do
-          Timeout::timeout(3) do
+          sleep 2
+          Timeout::timeout(4) do
             if port_open? @ip, 22
               logger.debug "SSH UP"
-              sleep 10
             else
               raise Errno::ECONNREFUSED
             end
           end
-          sleep 2
         end
-      rescue Timeout::Error
-        sleep 2
-        retry
-      rescue Errno::ECONNREFUSED
-        logger.debug "SHH DOWN"
+      rescue Timeout::Error, Errno::ECONNREFUSED
+        logger.debug "SSH DOWN"
       end
 
       def wait_for_ssh_up(options = {})
@@ -120,41 +116,32 @@ module Hetzner
       def installimage(options = {})
         template = render_template
 
-        Net::SSH.start(@ip, @login, :password => @password) do |ssh|
-          ssh.exec!("echo \"#{template}\" > /tmp/template")
+        remote do |ssh|
+          ssh.exec! "echo \"#{template}\" > /tmp/template"
           logger.info "remote executing: #{@bootstrap_cmd}"
           output = ssh.exec!(@bootstrap_cmd)
           logger.info output
         end
-      rescue Net::SSH::HostKeyMismatch => e
-        e.remember_host!
-        retry
       end
 
       def reboot(options = {})
-        Net::SSH.start(@ip, @login, :password => @password) do |ssh|
+        remote do |ssh|
           ssh.exec!("reboot")
         end
-      rescue Net::SSH::HostKeyMismatch => e
-        e.remember_host!
-        retry
       end
 
       def verify_installation(options = {})
-        Net::SSH.start(@ip, @login, :password => @password) do |ssh|
+        remote do |ssh|
           working_hostname = ssh.exec!("cat /etc/hostname")
           unless @hostname == working_hostname.chomp
             raise InstallationError, "hostnames do not match: assumed #{@hostname} but received #{working_hostname}"
           end
         end
-      rescue Net::SSH::HostKeyMismatch => e
-        e.remember_host!
-        retry
       end
 
       def copy_ssh_keys(options = {})
         if @public_keys
-          Net::SSH.start(@ip, @login, :password => @password) do |ssh|
+          remote do |ssh|
             ssh.exec!("mkdir /root/.ssh")
             @public_keys.to_a.each do |key|
               pub = File.read(File.expand_path(key))
@@ -162,18 +149,31 @@ module Hetzner
             end
           end
         end
+      end
+
+      def update_local_known_hosts(options = {})
+        remote(:paranoid => true) do |ssh|
+          # dummy
+        end
       rescue Net::SSH::HostKeyMismatch => e
         e.remember_host!
-        retry
+        logger.info "remote host key added to local ~/.ssh/known_hosts file."
       end
 
       def post_install(options = {})
         return unless @post_install
+
         post_install = render_post_install
         logger.info "executing post_install:\n #{post_install}"
-        logger.info `#{post_install}`
+
+        output = local do
+          `#{post_install}`
+        end
+
+        logger.info output
       end
 
+      
       def render_template
         eruby = Erubis::Eruby.new @template.to_s
 
@@ -203,6 +203,20 @@ module Hetzner
       def use_logger(logger_obj)
         @logger = logger_obj
         @logger.formatter = default_log_formatter
+      end
+      
+      def remote(options = {}, &block)
+
+        default = { :paranoid => false, :password => @password }
+        default.merge! options
+        
+        Net::SSH.start(@ip, @login, default) do |ssh|
+          block.call ssh
+        end
+      end
+
+      def local(&block)
+        block.call
       end
 
       def reset_retries

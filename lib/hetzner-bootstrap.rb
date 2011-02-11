@@ -25,8 +25,8 @@ module Hetzner
                         wait_for_ssh_up
                         verify_installation
                         copy_ssh_keys
+                        update_local_known_hosts
                         post_install)
-      #@actions     = %w(wait_for_ssh_down)
       @api         = options[:api]
       @logger      = options[:logger] || Logger.new(STDOUT)
     end
@@ -70,3 +70,4 @@ module Hetzner
     end
   end
 end
+
