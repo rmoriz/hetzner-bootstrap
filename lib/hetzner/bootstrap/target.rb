@@ -1,6 +1,7 @@
 require 'erubis'
 require 'net/ssh'
 require 'socket'
+require 'timeout'
 
 module Hetzner
   class Bootstrap
@@ -16,13 +17,15 @@ module Hetzner
       attr_accessor :post_install
       attr_accessor :public_keys
       attr_accessor :bootstrap_cmd
+      attr_accessor :logger
       
       def initialize(options = {})
         @rescue_os     = 'linux'
         @rescue_os_bit = '64'
         @retries       = 0
         @bootstrap_cmd = '/root/.oldroot/nfs/install/installimage -a -c /tmp/template'
-        
+        @login         = 'root'
+
         if tmpl = options.delete(:template)
           @template = Template.new tmpl
         else
@@ -38,19 +41,19 @@ module Hetzner
         result = @api.enable_rescue! @ip, @rescue_os, @rescue_os_bit
 
         if result.success? && result['rescue']
-          @login    = 'root'
           @password = result['rescue']['password']
           reset_retries
-          puts "IP: #{ip} => password: #{@password}"
+          logger.info "IP: #{ip} => password: #{@password}"
         elsif @retries > 3
+          logger.error "rescue system could not be activated"
           raise CantActivateRescueSystemError, result
         else
           @retries += 1
 
-          puts "problem while trying to activate rescue system (retries: #{@retries})"
+          logger.warn "problem while trying to activate rescue system (retries: #{@retries})"
           @api.disable_rescue! @ip
           
-          sleep @retries * 5 # => 5, 10, 15s
+          rolling_sleep
           enable_rescue_mode options
         end
       end
@@ -60,37 +63,58 @@ module Hetzner
 
         if result.success?
           reset_retries
-          sleep 15
         elsif @retries > 3
+          logger.error "resetting through webservice failed."
           raise CantResetSystemError, result
         else
           @retries += 1
+          logger.warn "problem while trying to reset/reboot system (retries: #{@retries})"
           rolling_sleep
-          puts "problem while trying to reset/reboot system (retries: #{@retries})"
           reset options
         end
       end
 
-      def wait_for_ssh(options = {})
-        ssh_port_probe = TCPSocket.new @ip, 22
-        return if IO.select([ssh_port_probe], nil, nil, 5)
+      def port_open? ip, port
+        ssh_port_probe = TCPSocket.new ip, port
+        IO.select([ssh_port_probe], nil, nil, 2)
+        ssh_port_probe.close
+        true
+      end
 
-      rescue Errno::ECONNREFUSED
-        @retries += 1
-        print "."
-        STDOUT.flush
-
-        if @retries > 20
-          raise CantSshAfterResetError
-        else
-          rolling_sleep
-          wait_for_ssh options
+      def wait_for_ssh_down(options = {})
+        loop do
+          Timeout::timeout(3) do
+            if port_open? @ip, 22
+              logger.debug "SSH UP"
+              sleep 10
+            else
+              raise Errno::ECONNREFUSED
+            end
+          end
+          sleep 2
         end
-      rescue => e
-        puts "Exception: #{e.class} #{e.message}"
-      ensure
-        puts ""
-        ssh_port_probe && ssh_port_probe.close
+      rescue Timeout::Error
+        sleep 2
+        retry
+      rescue Errno::ECONNREFUSED
+        logger.debug "SHH DOWN"
+      end
+
+      def wait_for_ssh_up(options = {})
+        loop do
+          Timeout::timeout(4) do
+            if port_open? @ip, 22
+              logger.debug "SSH UP"
+              return true
+            else
+              raise Errno::ECONNREFUSED
+            end
+          end
+        end
+      rescue Errno::ECONNREFUSED, Timeout::Error
+        logger.debug "SSH DOWN"
+        sleep 2
+        retry
       end
 
       def installimage(options = {})
@@ -98,11 +122,18 @@ module Hetzner
 
         Net::SSH.start(@ip, @login, :password => @password) do |ssh|
           ssh.exec!("echo \"#{template}\" > /tmp/template")
-          puts "remote executing: #{@bootstrap_cmd}"
+          logger.info "remote executing: #{@bootstrap_cmd}"
           output = ssh.exec!(@bootstrap_cmd)
-          puts output
+          logger.info output
+        end
+      rescue Net::SSH::HostKeyMismatch => e
+        e.remember_host!
+        retry
+      end
+
+      def reboot(options = {})
+        Net::SSH.start(@ip, @login, :password => @password) do |ssh|
           ssh.exec!("reboot")
-          sleep 4
         end
       rescue Net::SSH::HostKeyMismatch => e
         e.remember_host!
@@ -139,8 +170,8 @@ module Hetzner
       def post_install(options = {})
         return unless @post_install
         post_install = render_post_install
-        puts "executing:\n #{post_install}"
-        puts `#{post_install}`
+        logger.info "executing post_install:\n #{post_install}"
+        logger.info `#{post_install}`
       end
 
       def render_template
@@ -165,8 +196,13 @@ module Hetzner
         return eruby.result(params)
       end
 
-      def use_api(api)
-        @api = api
+      def use_api(api_obj)
+        @api = api_obj
+      end
+
+      def use_logger(logger_obj)
+        @logger = logger_obj
+        @logger.formatter = default_log_formatter
       end
 
       def reset_retries
@@ -175,6 +211,13 @@ module Hetzner
 
       def rolling_sleep
         sleep @retries * @retries * 3 + 1 # => 1, 4, 13, 28, 49, 76, 109, 148, 193, 244, 301, 364 ... seconds
+      end
+
+      def default_log_formatter
+         proc do |severity, datetime, progname, msg|
+           caller[4]=~/`(.*?)'/
+           "[#{datetime.strftime "%H:%M:%S"}][#{sprintf "%-15s", ip}][#{$1}] #{msg}\n"
+         end
       end
 
       class NoTemplateProvidedError < ArgumentError; end
