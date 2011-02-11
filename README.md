@@ -63,4 +63,4 @@ Commercial Support available through:
 Copyright
 ---------
 
-Copyright (c) 2011 Moriz GmbH, Roland Moriz. See {file:LICENSE} for details.
+Copyright (c) 2011 Moriz GmbH, Roland Moriz. See LICENSE file for details.
