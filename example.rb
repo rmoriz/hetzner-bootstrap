@@ -2,6 +2,7 @@
 require "rubygems"
 require "hetzner-bootstrap"
 
+# get your API login from Hetzner's customer panel at: https://robot.your-server.de/
 API_USERNAME="xxx"
 API_PASSWORD="yyy"
 
