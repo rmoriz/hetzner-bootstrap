@@ -15,6 +15,7 @@ module Hetzner
       attr_accessor :actions
       attr_accessor :hostname
       attr_accessor :post_install
+      attr_accessor :post_install_remote
       attr_accessor :public_keys
       attr_accessor :bootstrap_cmd
       attr_accessor :logger
@@ -158,6 +159,16 @@ module Hetzner
       rescue Net::SSH::HostKeyMismatch => e
         e.remember_host!
         logger.info "remote host key added to local ~/.ssh/known_hosts file."
+      end
+
+      def post_install_remote(options = {})
+        remote do |ssh|
+          @post_install_remote.split("\n").each do |cmd|
+            cmd.chomp!
+            ssh.exec!(cmd)
+            logger.info "executing #{cmd}"
+          end
+        end
       end
 
       def post_install(options = {})
