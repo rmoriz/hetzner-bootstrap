@@ -144,7 +144,7 @@ module Hetzner
         if @public_keys
           remote do |ssh|
             ssh.exec!("mkdir /root/.ssh")
-            @public_keys.to_a.each do |key|
+            @public_keys.split("\n").each do |key|
               pub = File.read(File.expand_path(key))
               ssh.exec!("echo \"#{pub}\" >> /root/.ssh/authorized_keys")
             end
