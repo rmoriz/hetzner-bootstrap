@@ -31,6 +31,8 @@ LV host swap swap swap   5G
 IMAGE /root/images/Ubuntu-1010-maverick-64-minimal.tar.gz
 EOT
 
+# the post_install hook is a great place to setup software/system provisioning
+#
 post_install = <<EOT
 knife bootstrap <%= ip %> -N <%= hostname %> "role[base],role[kvm_host]"
 EOT
