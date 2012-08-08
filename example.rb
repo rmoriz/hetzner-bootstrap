@@ -3,10 +3,14 @@ require "rubygems"
 require "hetzner-bootstrap"
 
 # get your API login from Hetzner's customer panel at: https://robot.your-server.de/
-API_USERNAME="xxx"
-API_PASSWORD="yyy"
+# assign env variables:
+#   ROBOT_USER 
+#   ROBOT_PASSWORD
+#
+# rbenv-tip: checkout rbenv-vars, it's awesome! 
+#            https://github.com/sstephenson/rbenv-vars/
 
-bs = Hetzner::Bootstrap.new :api => Hetzner::API.new(API_USERNAME, API_PASSWORD)
+bs = Hetzner::Bootstrap.new :api => Hetzner::API.new ENV['ROBOT_USER'], ENV['ROBOT_PASSWORD']
 
 # 2 disks, software raid 1, etc.
 template = <<EOT
@@ -21,14 +25,14 @@ BOOTLOADER grub
 
 HOSTNAME <%= hostname %>
 
-PART /boot ext2 1G
+PART /boot ext2    1G
 PART lvm   host   75G
 PART lvm   guest  all
 
 LV host root /    ext3  50G
 LV host swap swap swap   5G
 
-IMAGE /root/images/Ubuntu-1010-maverick-64-minimal.tar.gz
+IMAGE /root/images/Ubuntu-1204-precise-64-minimal.tar.gz
 EOT
 
 # the post_install hook is a great place to setup software/system provisioning
