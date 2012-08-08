@@ -4,10 +4,10 @@ require "hetzner-bootstrap"
 
 # get your API login from Hetzner's customer panel at: https://robot.your-server.de/
 # assign env variables:
-#   ROBOT_USER 
+#   ROBOT_USER
 #   ROBOT_PASSWORD
 #
-# rbenv-tip: checkout rbenv-vars, it's awesome! 
+# rbenv-tip: checkout rbenv-vars, it's awesome!
 #            https://github.com/sstephenson/rbenv-vars/
 
 bs = Hetzner::Bootstrap.new :api => Hetzner::API.new(ENV['ROBOT_USER'], ENV['ROBOT_PASSWORD'])
@@ -42,7 +42,7 @@ HOSTNAME <%= hostname %>
 ## * <size>           you can use the keyword 'all' to assign all the
 ##                    remaining space of the drive to the *last* partition.
 ##                    you can use M/G/T for unit specification in MIB/GIB/TIB
-## 
+##
 ## notes:
 ##   - extended partitions are created automatically
 ##   - '/boot' cannot be on a xfs filesystem!
