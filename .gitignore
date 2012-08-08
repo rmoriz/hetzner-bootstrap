@@ -4,3 +4,4 @@ bin/*
 .bundle
 Gemfile.lock
 pkg/*
+.rbenv-vars
