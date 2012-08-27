@@ -55,7 +55,7 @@ Warnings:
 Commercial Support available through:
 -------------------------------------
 
-[![Moriz GmbH](http://moriz.de/images/logo.png)](http://moriz.de/)
+[![Moriz GmbH](https://moriz.de/images/logo.png)](http://moriz.de/)
 
 [Moriz GmbH, München](http://moriz.de/)
 
