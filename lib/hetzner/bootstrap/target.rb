@@ -23,7 +23,7 @@ module Hetzner
         @rescue_os     = 'linux'
         @rescue_os_bit = '64'
         @retries       = 0
-        @bootstrap_cmd = '/root/.oldroot/nfs/install/installimage -a -c /tmp/template'
+        @bootstrap_cmd = 'export TERM=xterm; /root/.oldroot/nfs/install/installimage -a -c /tmp/template'
         @login         = 'root'
 
         if tmpl = options.delete(:template)
