@@ -178,8 +178,8 @@ module Hetzner
         remote do |ssh|
           @post_install_remote.split("\n").each do |cmd|
             cmd.chomp!
-            ssh.exec!(cmd)
             logger.info "executing #{cmd}"
+            ssh.exec!(cmd)
           end
         end
       end
