@@ -12,11 +12,11 @@ Gem::Specification.new do |s|
   s.summary     = %q{Easy bootstrapping of hetzner.de rootservers using hetzner-api}
   s.description = %q{Easy bootstrapping of hetzner.de rootservers using hetzner-api}
 
-  s.add_dependency 'hetzner-api', '>= 1.0.1'
-  s.add_dependency 'net-ssh',     '>= 2.1.0'
-  s.add_dependency 'erubis',      '>= 2.6.6'
+  s.add_dependency 'hetzner-api', '>= 1.1.0'
+  s.add_dependency 'net-ssh',     '>= 2.6.0'
+  s.add_dependency 'erubis',      '>= 2.7.0'
 
-  s.add_development_dependency "rspec",   ">= 2.4.0"
+  s.add_development_dependency "rspec",   ">= 2.13.0"
   s.add_development_dependency "rake"
 
   s.files         = `git ls-files`.split("\n")
