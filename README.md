@@ -65,4 +65,7 @@ Commercial Support available through:
 Copyright
 ---------
 
-Copyright (c) 2011 Moriz GmbH, Roland Moriz. See LICENSE file for details.
+Copyright © 2013 [Roland Moriz](https://roland.io), [Moriz GmbH](https://moriz.de/)
+
+[![LinkedIn](http://www.linkedin.com/img/webpromo/btn_viewmy_160x25.png)](http://www.linkedin.com/in/rmoriz)
+[![Twitter](http://i.imgur.com/1kYFHlu.png)](https://twitter.com/rmoriz)
