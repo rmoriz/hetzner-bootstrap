@@ -3,6 +3,8 @@ hetzner-bootstrap
 
 hetzner-bootstrap allows you to bootstrap a provisioned EQ Server from hetzner.de
 
+[![Gem Version](https://badge.fury.io/rb/hetzner-bootstrap.png)](http://badge.fury.io/rb/hetzner-bootstrap)
+
 What it does:
 -------------
 
