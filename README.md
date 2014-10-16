@@ -52,7 +52,6 @@ bs = Hetzner::Bootstrap.new api => Hetzner::API.new(ENV['ROBOT_USER'], ENV['ROBO
 template = <<EOT
 DRIVE1 /dev/sda
 DRIVE2 /dev/sdb
-FORMATDRIVE2 0
 
 ## activate software RAID?  < 0 | 1 >
 SWRAID 1
