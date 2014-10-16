@@ -73,24 +73,18 @@ LV host swap swap swap   5G
 # https: https://<user>:<password>@hostname/path/to/image/filename.tbz
 # nfs:   hostname:/path/to/image/filename.tgz
 
-# Default images provided by hetzner as of August 2012:
-# CentOS-58-32-minimal.tar.gz
-# CentOS-58-64-minimal.tar.gz
-# CentOS-62-32-minimal.tar.gz
-# CentOS-62-64-cpanel.tar.gz
-# CentOS-62-64-minimal.tar.gz
-# CentOS-63-32-minimal.tar.gz
-# CentOS-63-64-cpanel.tar.gz
-# CentOS-63-64-minimal.tar.gz
-# Debian-60-squeeze-32-minimal.tar.gz
-# Debian-60-squeeze-64-LAMP.tar.gz
-# Debian-60-squeeze-64-minimal.tar.gz
-# openSUSE-121-32-minimal.tar.gz
-# openSUSE-121-64-minimal.tar.gz
-# Ubuntu-1004-lucid-32-minimal.tar.gz
-# Ubuntu-1004-lucid-64-minimal.tar.gz
-# Ubuntu-1204-precise-32-minimal.tar.gz
+# Default images provided by hetzner as of October 2014:
+# Archlinux-2014-64-minmal.tar.gz
+# CentOS-65-32-minimal.tar.gz
+# CentOS-65-64-cpanel.tar.gz
+# CentOS-65-64-minimal.tar.gz
+# CentOS-70-64-minimal.tar.gz
+# Debian-76-wheezy-32-minimal.tar.gz
+# Debian-76-wheezy-64-LAMP.tar.gz
+# Debian-76-wheezy-64-minimal.tar.gz
+# openSUSE-131-64-minimal.tar.gz
 # Ubuntu-1204-precise-64-minimal.tar.gz
+# Ubuntu-1404-trusty-64-minimal.tar.gz
 
 
 IMAGE /root/images/Ubuntu-1204-precise-64-minimal.tar.gz
