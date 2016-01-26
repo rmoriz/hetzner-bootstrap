@@ -33,42 +33,40 @@ module Hetzner
     end
 
     def add_target(param)
-      if param.is_a? Hetzner::Bootstrap::Target
-        @targets << param
-      else
-        @targets << (Hetzner::Bootstrap::Target.new param)
-      end
+      @targets << if param.is_a? Hetzner::Bootstrap::Target
+                    param
+                  else
+                    Hetzner::Bootstrap::Target.new(param)
+                  end
     end
 
     def <<(param)
       add_target param
     end
 
-    def bootstrap!(options = {})
+    def bootstrap!(_options = {})
       @targets.each do |target|
-        #fork do
-          target.use_api    @api
-          target.use_logger @logger
-          bootstrap_one_target! target
-        #end
+        # fork do
+        target.use_api @api
+        target.use_logger @logger
+        bootstrap_one_target! target
+        # end
       end
-      #Process.waitall
+      # Process.waitall
     end
 
     def bootstrap_one_target!(target)
       actions = (target.actions || @actions)
-      actions.each_with_index do |action, index|
-
+      actions.each_with_index do |action, _index|
         loghack = "\b" * 24 # remove: "[bootstrap_one_target!] ".length
-        target.logger.info "#{loghack}[#{action}] #{sprintf "%-20s", "START"}"
+        target.logger.info "#{loghack}[#{action}] #{format '%-20s', 'START'}"
         d = Benchmark.realtime do
           target.send action
         end
-        target.logger.info "#{loghack}[#{action}] FINISHED in #{sprintf "%.5f",d} seconds"
+        target.logger.info "#{loghack}[#{action}] FINISHED in #{format '%.5f', d} seconds"
       end
     rescue => e
       puts "something bad happened unexpectedly: #{e.class} => #{e.message}"
     end
   end
 end
-

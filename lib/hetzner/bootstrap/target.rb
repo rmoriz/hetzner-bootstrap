@@ -21,20 +21,19 @@ module Hetzner
       attr_accessor :logger
 
       def initialize(options = {})
-        @rescue_os     = 'linux'
-        @rescue_os_bit = '64'
-        @retries       = 0
-        @bootstrap_cmd = 'export TERM=xterm; /root/.oldroot/nfs/install/installimage -a -c /tmp/template'
-        @login         = 'root'
+        @rescue_os           = 'linux'
+        @rescue_os_bit       = '64'
+        @retries             = 0
+        @bootstrap_cmd       = 'export TERM=xterm; /root/.oldroot/nfs/install/installimage -a -c /tmp/template'
+        @login               = 'root'
+        @post_install_remote = ''
 
-        if tmpl = options.delete(:template)
-          @template = Template.new tmpl
-        else
-          raise NoTemplateProvidedError.new 'No imageinstall template provided.'
-        end
+        @template = Template.new options.delete(:template)
 
-        options.each_pair do |k,v|
-          self.send("#{k}=", v)
+        fail NoTemplateProvidedError 'No imageinstall template provided.' unless @template
+
+        options.each_pair do |k, v|
+          send("#{k}=", v)
         end
       end
 
@@ -46,8 +45,8 @@ module Hetzner
           reset_retries
           logger.info "IP: #{ip} => password: #{@password}"
         elsif @retries > 3
-          logger.error "rescue system could not be activated"
-          raise CantActivateRescueSystemError, result
+          logger.error 'rescue system could not be activated'
+          fail CantActivateRescueSystemError, result
         else
           @retries += 1
 
@@ -65,8 +64,8 @@ module Hetzner
         if result.success?
           reset_retries
         elsif @retries > 3
-          logger.error "resetting through webservice failed."
-          raise CantResetSystemError, result
+          logger.error 'resetting through webservice failed.'
+          fail CantResetSystemError, result
         else
           @retries += 1
           logger.warn "problem while trying to reset/reboot system (retries: #{@retries})"
@@ -75,75 +74,75 @@ module Hetzner
         end
       end
 
-      def port_open? ip, port
+      def port_open?(ip, port)
         ssh_port_probe = TCPSocket.new ip, port
         IO.select([ssh_port_probe], nil, nil, 2)
         ssh_port_probe.close
         true
       end
 
-      def wait_for_ssh_down(options = {})
+      def wait_for_ssh_down
         loop do
           sleep 2
-          Timeout::timeout(4) do
-            if port_open? @ip, 22
-              logger.debug "SSH UP"
-            else
-              raise Errno::ECONNREFUSED
-            end
+          Timeout.timeout(4) do
+            fail Errno::ECONNREFUSED unless port_open? @ip, 22
+            logger.debug 'SSH UP'
           end
         end
       rescue Timeout::Error, Errno::ECONNREFUSED
-        logger.debug "SSH DOWN"
+        logger.debug 'SSH DOWN'
       end
 
-      def wait_for_ssh_up(options = {})
+      def wait_for_ssh_up
         loop do
-          Timeout::timeout(4) do
-            if port_open? @ip, 22
-              logger.debug "SSH UP"
-              return true
-            else
-              raise Errno::ECONNREFUSED
-            end
+          Timeout.timeout(4) do
+            fail Errno::ECONNREFUSED unless port_open? @ip, 22
+
+            logger.debug 'SSH UP'
+            return true
           end
         end
       rescue Errno::ECONNREFUSED, Timeout::Error
-        logger.debug "SSH DOWN"
+        logger.debug 'SSH DOWN'
         sleep 2
         retry
       end
 
-      def installimage(options = {})
+      def installimage
         template = render_template
 
         remote do |ssh|
           ssh.exec! "echo \"#{template}\" > /tmp/template"
           logger.info "remote executing: #{@bootstrap_cmd}"
           output = ssh.exec!(@bootstrap_cmd)
-          logger.info output
+          logger.info output.gsub(`clear`, '')
         end
+
+      rescue Net::SSH::Disconnect
+        puts 'SSH connection was closed.'
       end
 
-      def reboot(options = {})
+      def reboot
         remote do |ssh|
-          ssh.exec!("reboot")
+          ssh.exec!('reboot')
         end
+      rescue Net::SSH::Disconnect
+        puts 'SSH connection was closed.'
       end
 
-      def verify_installation(options = {})
+      def verify_installation
         remote do |ssh|
-          working_hostname = ssh.exec!("cat /etc/hostname")
+          working_hostname = ssh.exec!('cat /etc/hostname')
           unless @hostname == working_hostname.chomp
-            raise InstallationError, "hostnames do not match: assumed #{@hostname} but received #{working_hostname}"
+            logger.debug "hostnames do not match: assumed #{@hostname} but received #{working_hostname}"
           end
         end
       end
 
-      def copy_ssh_keys(options = {})
+      def copy_ssh_keys
         if @public_keys
           remote do |ssh|
-            ssh.exec!("mkdir /root/.ssh")
+            ssh.exec!('mkdir /root/.ssh')
             Array(@public_keys).each do |key|
               pub = File.read(File.expand_path(key))
               ssh.exec!("echo \"#{pub}\" >> /root/.ssh/authorized_keys")
@@ -152,16 +151,16 @@ module Hetzner
         end
       end
 
-      def update_local_known_hosts(options = {})
-        remote(:paranoid => true) do |ssh|
+      def update_local_known_hosts
+        remote(paranoid: true) do |ssh|
           # dummy
         end
       rescue Net::SSH::HostKeyMismatch => e
         e.remember_host!
-        logger.info "remote host key added to local ~/.ssh/known_hosts file."
+        logger.info 'remote host key added to local ~/.ssh/known_hosts file.'
       end
 
-      def post_install(options = {})
+      def post_install
         return unless @post_install
 
         post_install = render_post_install
@@ -174,7 +173,7 @@ module Hetzner
         logger.info output
       end
 
-      def post_install_remote(options = {})
+      def post_install_remote
         remote do |ssh|
           @post_install_remote.split("\n").each do |cmd|
             cmd.chomp!
@@ -191,7 +190,7 @@ module Hetzner
         params[:hostname] = @hostname
         params[:ip]       = @ip
 
-        return eruby.result(params)
+        eruby.result(params)
       end
 
       def render_post_install
@@ -203,7 +202,7 @@ module Hetzner
         params[:login]    = @login
         params[:password] = @password
 
-        return eruby.result(params)
+        eruby.result(params)
       end
 
       def use_api(api_obj)
@@ -215,18 +214,17 @@ module Hetzner
         @logger.formatter = default_log_formatter
       end
 
-      def remote(options = {}, &block)
-
-        default = { :paranoid => false, :password => @password }
+      def remote(options = {})
+        default = { paranoid: false, password: @password }
         default.merge! options
 
         Net::SSH.start(@ip, @login, default) do |ssh|
-          block.call ssh
+          yield ssh
         end
       end
 
-      def local(&block)
-        block.call
+      def local
+        yield
       end
 
       def reset_retries
@@ -234,14 +232,16 @@ module Hetzner
       end
 
       def rolling_sleep
-        sleep @retries * @retries * 3 + 1 # => 1, 4, 13, 28, 49, 76, 109, 148, 193, 244, 301, 364 ... seconds
+        # => 1, 4, 13, 28, 49, 76, 109, 148, 193, 244, 301, 364 ... seconds
+        sleep @retries * @retries * 3 + 1
       end
 
       def default_log_formatter
-         proc do |severity, datetime, progname, msg|
-           caller[4]=~/`(.*?)'/
-           "[#{datetime.strftime "%H:%M:%S"}][#{sprintf "%-15s", ip}][#{$1}] #{msg}\n"
-         end
+        proc do |_severity, datetime, _progname, msg|
+          caller[4] =~ /`(.*?)'/
+          "[#{datetime.strftime '%H:%M:%S'}][#{format '%-15s', ip}]" \
+          "[#{Regexp.last_match(1)}] #{msg}\n"
+        end
       end
 
       class NoTemplateProvidedError < ArgumentError; end

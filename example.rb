@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
-require "rubygems"
-require "hetzner-bootstrap"
+require 'rubygems'
+require 'hetzner-bootstrap'
 
 # get your API login from Hetzner's customer panel at: https://robot.your-server.de/
 # assign env variables:
@@ -10,7 +10,10 @@ require "hetzner-bootstrap"
 # rbenv-tip: checkout rbenv-vars, it's awesome!
 #            https://github.com/sstephenson/rbenv-vars/
 
-bs = Hetzner::Bootstrap.new(api: Hetzner::API.new(ENV['ROBOT_USER'], ENV['ROBOT_PASSWORD']))
+bs = Hetzner::Bootstrap.new(api: Hetzner::API.new(
+  ENV['ROBOT_USER'],
+  ENV['ROBOT_PASSWORD']
+))
 
 # 2 disks, software raid 1, etc.
 template = <<EOT
@@ -91,18 +94,18 @@ IMAGE /root/images/Ubuntu-1204-precise-64-minimal.tar.gz
 
 EOT
 
-# the post_install hook is a great place to setup further software/system provisioning
+# the post_install hook is a great place to setup further
+# software/system provisioning
 #
 post_install = <<EOT
   # knife bootstrap <%= ip %> -N <%= hostname %> "role[base],role[kvm_host]"
 EOT
 
 # duplicate entry for each system
-bs << { :ip => "1.2.3.4",
-        :template => template,                 # string will be parsed by erubis
-        :hostname => 'server100.example.com',  # will be used for setting the systems' hostname
-        :public_keys => "~/.ssh/id_dsa.pub",   # will be copied over to the freshly bootstrapped system
-        :post_install => post_install }        # will be called locally at the end and can be used e.g. to run a chef bootstrap
+bs << { ip: '1.2.3.4',
+        template: template,               # string will be parsed by erubis
+        hostname: 'server100',            # sets hostname
+        public_keys: '~/.ssh/id_dsa.pub', # will be copied to your system
+        post_install: post_install }      # will be executed *locally* at the end
 
 bs.bootstrap!
-
