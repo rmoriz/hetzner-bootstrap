@@ -47,7 +47,7 @@ Warning: All existing data on the system will be lost!
 #!/usr/bin/env ruby
 require 'hetzner-bootstrap'
 
-bs = Hetzner::Bootstrap.new api => Hetzner::API.new(ENV['ROBOT_USER'], ENV['ROBOT_PASSWORD'])
+bs = Hetzner::Bootstrap.new(api: Hetzner::API.new(ENV['ROBOT_USER'], ENV['ROBOT_PASSWORD']))
 
 template = <<EOT
 DRIVE1 /dev/sda
