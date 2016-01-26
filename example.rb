@@ -10,7 +10,7 @@ require "hetzner-bootstrap"
 # rbenv-tip: checkout rbenv-vars, it's awesome!
 #            https://github.com/sstephenson/rbenv-vars/
 
-bs = Hetzner::Bootstrap.new :api => Hetzner::API.new(ENV['ROBOT_USER'], ENV['ROBOT_PASSWORD'])
+bs = Hetzner::Bootstrap.new(api: Hetzner::API.new(ENV['ROBOT_USER'], ENV['ROBOT_PASSWORD']))
 
 # 2 disks, software raid 1, etc.
 template = <<EOT
