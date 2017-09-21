@@ -152,7 +152,7 @@ module Hetzner
       end
 
       def update_local_known_hosts
-        remote(paranoid: true) do |ssh|
+        remote(verify_host_key: true) do |ssh|
           # dummy
         end
       rescue Net::SSH::HostKeyMismatch => e
@@ -215,7 +215,7 @@ module Hetzner
       end
 
       def remote(options = {})
-        default = { paranoid: false, password: @password }
+        default = { verify_host_key: false, password: @password }
         default.merge! options
 
         Net::SSH.start(@ip, @login, default) do |ssh|
