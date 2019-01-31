@@ -1,5 +1,6 @@
-# -*- encoding: utf-8 -*-
-$LOAD_PATH.push File.expand_path('../lib', __FILE__)
+# frozen_string_literal: true
+
+$LOAD_PATH.push File.expand_path('lib', __dir__)
 require 'hetzner/bootstrap/version'
 
 Gem::Specification.new do |s|
@@ -8,17 +9,20 @@ Gem::Specification.new do |s|
   s.platform    = Gem::Platform::RUBY
   s.authors     = ['Roland Moriz']
   s.email       = ['roland@moriz.de']
-  s.homepage    = 'http://moriz.de/opensource/hetzner-api'
+  s.homepage    = 'https://github.com/rmoriz/hetzner-bootstrap'
   s.summary     = 'Easy bootstrapping of hetzner.de rootservers using hetzner-api'
   s.description = 'Easy bootstrapping of hetzner.de rootservers using hetzner-api'
 
-  s.add_dependency 'hetzner-api', '>= 1.1.0'
-  s.add_dependency 'net-ssh',     '>= 2.6.0'
-  s.add_dependency 'erubis',      '>= 2.7.0'
+  s.add_dependency 'bcrypt_pbkdf', '>= 1.0', '< 2.0'
+  s.add_dependency 'ed25519',      '>= 1.2', '< 2.0'
+  s.add_dependency 'hetzner-api',  '>= 1.1.0'
+  s.add_dependency 'net-ssh',      '>= 5.1.0'
 
-  s.add_development_dependency 'rspec', '~> 3.4.0'
+  s.add_dependency 'erubis', '>= 2.7.0'
+
   s.add_development_dependency 'rake'
-  s.add_development_dependency 'rubocop', '~> 0.36.0'
+  s.add_development_dependency 'rspec', '~> 3.4.0'
+  s.add_development_dependency 'rubocop', '~> 0.63.1'
 
   s.files         = `git ls-files`.split("\n")
   s.test_files    = `git ls-files -- {test,spec,features}/*`.split("\n")

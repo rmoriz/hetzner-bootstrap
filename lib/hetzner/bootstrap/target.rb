@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'erubis'
 require 'net/ssh'
 require 'socket'
@@ -14,8 +16,8 @@ module Hetzner
       attr_accessor :rescue_os_bit
       attr_accessor :actions
       attr_accessor :hostname
-      attr_accessor :post_install
-      attr_accessor :post_install_remote
+      attr_writer   :post_install
+      attr_writer   :post_install_remote
       attr_accessor :public_keys
       attr_accessor :bootstrap_cmd
       attr_accessor :logger
@@ -30,7 +32,7 @@ module Hetzner
 
         @template = Template.new options.delete(:template)
 
-        fail NoTemplateProvidedError 'No imageinstall template provided.' unless @template
+        raise NoTemplateProvidedError 'No imageinstall template provided.' unless @template
 
         options.each_pair do |k, v|
           send("#{k}=", v)
@@ -46,7 +48,7 @@ module Hetzner
           logger.info "IP: #{ip} => password: #{@password}"
         elsif @retries > 3
           logger.error 'rescue system could not be activated'
-          fail CantActivateRescueSystemError, result
+          raise CantActivateRescueSystemError, result
         else
           @retries += 1
 
@@ -65,7 +67,7 @@ module Hetzner
           reset_retries
         elsif @retries > 3
           logger.error 'resetting through webservice failed.'
-          fail CantResetSystemError, result
+          raise CantResetSystemError, result
         else
           @retries += 1
           logger.warn "problem while trying to reset/reboot system (retries: #{@retries})"
@@ -85,7 +87,8 @@ module Hetzner
         loop do
           sleep 2
           Timeout.timeout(4) do
-            fail Errno::ECONNREFUSED unless port_open? @ip, 22
+            raise Errno::ECONNREFUSED unless port_open? @ip, 22
+
             logger.debug 'SSH UP'
           end
         end
@@ -96,7 +99,7 @@ module Hetzner
       def wait_for_ssh_up
         loop do
           Timeout.timeout(4) do
-            fail Errno::ECONNREFUSED unless port_open? @ip, 22
+            raise Errno::ECONNREFUSED unless port_open? @ip, 22
 
             logger.debug 'SSH UP'
             return true
@@ -117,42 +120,38 @@ module Hetzner
           output = ssh.exec!(@bootstrap_cmd)
           logger.info output.gsub(`clear`, '')
         end
-
-      rescue Net::SSH::Disconnect
-        puts 'SSH connection was closed.'
       end
 
       def reboot
         remote do |ssh|
           ssh.exec!('reboot')
         end
-      rescue Net::SSH::Disconnect
-        puts 'SSH connection was closed.'
+      rescue IOError, Net::SSH::Disconnect
+        logger.debug 'SSH connection was closed as anticipated.'
       end
 
       def verify_installation
         remote do |ssh|
           working_hostname = ssh.exec!('cat /etc/hostname')
-          unless @hostname == working_hostname.chomp
-            logger.debug "hostnames do not match: assumed #{@hostname} but received #{working_hostname}"
-          end
+          working_hostname.chomp!
+          logger.debug "hostnames do not match: assumed #{@hostname} but received #{working_hostname}" unless @hostname == working_hostname.chomp
         end
       end
 
       def copy_ssh_keys
-        if @public_keys
-          remote do |ssh|
-            ssh.exec!('mkdir /root/.ssh')
-            Array(@public_keys).each do |key|
-              pub = File.read(File.expand_path(key))
-              ssh.exec!("echo \"#{pub}\" >> /root/.ssh/authorized_keys")
-            end
+        return unless @public_keys
+
+        remote do |ssh|
+          ssh.exec!('mkdir /root/.ssh')
+          Array(@public_keys).each do |key|
+            pub = File.read(File.expand_path(key))
+            ssh.exec!("echo \"#{pub}\" >> /root/.ssh/authorized_keys")
           end
         end
       end
 
       def update_local_known_hosts
-        remote(verify_host_key: true) do |ssh|
+        remote(verify_host_key: :accept_new_or_local_tunnel) do |ssh|
           # dummy
         end
       rescue Net::SSH::HostKeyMismatch => e
@@ -181,6 +180,8 @@ module Hetzner
             ssh.exec!(cmd)
           end
         end
+      rescue IOError, Net::SSH::Disconnect
+        logger.debug 'SSH connection was closed.'
       end
 
       def render_template
@@ -215,7 +216,7 @@ module Hetzner
       end
 
       def remote(options = {})
-        default = { verify_host_key: false, password: @password }
+        default = { verify_host_key: :never, password: @password }
         default.merge! options
 
         Net::SSH.start(@ip, @login, default) do |ssh|
@@ -238,7 +239,7 @@ module Hetzner
 
       def default_log_formatter
         proc do |_severity, datetime, _progname, msg|
-          caller[4] =~ /`(.*?)'/
+          caller(5..5).first =~ /`(.*?)'/
           "[#{datetime.strftime '%H:%M:%S'}][#{format '%-15s', ip}]" \
           "[#{Regexp.last_match(1)}] #{msg}\n"
         end

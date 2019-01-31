@@ -1,6 +1,9 @@
+# frozen_string_literal: true
+
 require 'hetzner-api'
 require 'hetzner-bootstrap'
 
+# rubocop:disable Metrics/BlockLength
 describe 'Bootstrap' do
   let(:bs) do
     Hetzner::Bootstrap.new(api: Hetzner::API.new(API_USERNAME, API_PASSWORD))
@@ -33,10 +36,11 @@ describe 'Bootstrap' do
   end
 
   def improper_target_without_template
-    proper_target.select { |k, _v| k != :template }
+    proper_target.reject { |k, _v| k == :template }
   end
 
   def default_template
     'string'
   end
 end
+# rubocop:enable Metrics/BlockLength

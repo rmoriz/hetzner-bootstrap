@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'benchmark'
 require 'logger'
 
@@ -15,7 +17,7 @@ module Hetzner
 
     def initialize(options = {})
       @targets     = []
-      @actions     = %w(enable_rescue_mode
+      @actions     = %w[enable_rescue_mode
                         reset
                         wait_for_ssh_down
                         wait_for_ssh_up
@@ -27,7 +29,7 @@ module Hetzner
                         copy_ssh_keys
                         update_local_known_hosts
                         post_install
-                        post_install_remote)
+                        post_install_remote]
       @api         = options[:api]
       @logger      = options[:logger] || Logger.new(STDOUT)
     end
@@ -65,7 +67,7 @@ module Hetzner
         end
         target.logger.info "#{loghack}[#{action}] FINISHED in #{format '%.5f', d} seconds"
       end
-    rescue => e
+    rescue StandardError => e
       puts "something bad happened unexpectedly: #{e.class} => #{e.message}"
     end
   end

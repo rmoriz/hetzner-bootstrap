@@ -50,6 +50,7 @@ require 'hetzner-bootstrap'
 bs = Hetzner::Bootstrap.new(api: Hetzner::API.new(ENV['ROBOT_USER'], ENV['ROBOT_PASSWORD']))
 
 template = <<EOT
+# see https://github.com/hetzneronline/installimage/
 DRIVE1 /dev/sda
 DRIVE2 /dev/sdb
 
@@ -128,7 +129,7 @@ post_install = <<EOT
   # knife bootstrap <%= ip %> -N <%= hostname %> "role[base],role[kvm_host]"
 EOT
 
-bs << { 
+bs << {
         ip:  '1.2.3.4',
         template:  template,                # string will be parsed by erubis
         hostname: 'server100.example.com',  # will be used for setting the systems' hostname
@@ -136,7 +137,7 @@ bs << {
         post_install: post_install          # will be called locally at the end and can be used e.g. to run a chef bootstrap
       }
 
-bs << { 
+bs << {
         ip:  '1.2.3.5',
         template:  template,                # string will be parsed by erubis
         hostname: 'server101.example.com',  # will be used for setting the systems' hostname
@@ -144,7 +145,7 @@ bs << {
         post_install: post_install          # will be called locally at the end and can be used e.g. to run a chef bootstrap
       }
 
-…        
+...
 bs.bootstrap!
 
 
@@ -159,23 +160,13 @@ Warnings:
 ---------
 
 * All existing data on the system will be wiped on bootstrap!
-* This is not an official Hetzner AG project.
-* The gem and the author are not related to Hetzner AG!
+* This is not an official Hetzner Online GmbH project.
+* The gem and the author are not related to Hetzner Online GmbH !
 
 **Use at your very own risk. Satisfaction is NOT guaranteed.**
-
-Commercial Support available through:
--------------------------------------
-
-[![Moriz GmbH](https://moriz.de/images/logo.png)](http://moriz.de/)
-
-[Moriz GmbH, München](http://moriz.de/)
 
 
 Copyright
 ---------
 
-Copyright © 2013 [Roland Moriz](https://roland.io), [Moriz GmbH](https://moriz.de/)
-
-[![LinkedIn](http://www.linkedin.com/img/webpromo/btn_viewmy_160x25.png)](http://www.linkedin.com/in/rmoriz)
-[![Twitter](http://i.imgur.com/1kYFHlu.png)](https://twitter.com/rmoriz)
+Copyright © 2019 [Roland Moriz](https://roland.io), [Moriz GmbH](https://moriz.de/)

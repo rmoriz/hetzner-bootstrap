@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Hetzner
   class Bootstrap
     class Template
@@ -13,7 +15,7 @@ module Hetzner
         # also run:   $ installimage -h
         #
         if param.is_a? Hetzner::Bootstrap::Template
-          return param
+          param
         elsif param.is_a? String
           @raw_template = param
         end
