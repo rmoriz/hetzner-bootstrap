@@ -14,6 +14,8 @@ Gem::Specification.new do |s|
   s.description = 'Easy bootstrapping of hetzner.de rootservers using hetzner-api'
 
   s.required_ruby_version = '~> 3.0'
+  s.add_dependency 'bcrypt_pbkdf', '>= 1.0', '< 2.0'
+  s.add_dependency 'ed25519', '>= 1.2', '< 2.0'
   s.add_dependency 'erubis', '>= 2.7.0'
   s.add_dependency 'hetzner-api', '>= 1.1.0'
   s.add_dependency 'net-ssh', '~> 6.1'
