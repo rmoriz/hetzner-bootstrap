@@ -10,10 +10,7 @@ require 'hetzner/bootstrap/template'
 
 module Hetzner
   class Bootstrap
-    attr_accessor :targets
-    attr_accessor :api
-    attr_accessor :actions
-    attr_accessor :logger
+    attr_accessor :targets, :api, :actions, :logger
 
     def initialize(options = {})
       @targets     = []
@@ -31,7 +28,7 @@ module Hetzner
                         post_install
                         post_install_remote]
       @api         = options[:api]
-      @logger      = options[:logger] || Logger.new(STDOUT)
+      @logger      = options[:logger] || Logger.new($stdout)
     end
 
     def add_target(param)

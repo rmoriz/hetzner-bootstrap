@@ -36,7 +36,7 @@ describe 'Bootstrap' do
   end
 
   def improper_target_without_template
-    proper_target.reject { |k, _v| k == :template }
+    proper_target.except(:template)
   end
 
   def default_template

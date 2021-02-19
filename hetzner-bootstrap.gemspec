@@ -13,16 +13,17 @@ Gem::Specification.new do |s|
   s.summary     = 'Easy bootstrapping of hetzner.de rootservers using hetzner-api'
   s.description = 'Easy bootstrapping of hetzner.de rootservers using hetzner-api'
 
-  s.add_dependency 'bcrypt_pbkdf', '>= 1.0', '< 2.0'
-  s.add_dependency 'ed25519',      '>= 1.2', '< 2.0'
-  s.add_dependency 'hetzner-api',  '>= 1.1.0'
-  s.add_dependency 'net-ssh',      '>= 5.1.0'
-
+  s.required_ruby_version = '~> 3.0'
   s.add_dependency 'erubis', '>= 2.7.0'
+  s.add_dependency 'hetzner-api', '>= 1.1.0'
+  s.add_dependency 'net-ssh', '~> 6.1'
+  s.add_dependency 'rexml'
 
   s.add_development_dependency 'rake'
   s.add_development_dependency 'rspec', '~> 3.4.0'
-  s.add_development_dependency 'rubocop', '~> 0.63.1'
+  s.add_development_dependency 'rubocop', '~> 1.10'
+  s.add_development_dependency 'rubocop-rake'
+  s.add_development_dependency 'rubocop-rspec'
 
   s.files         = `git ls-files`.split("\n")
   s.test_files    = `git ls-files -- {test,spec,features}/*`.split("\n")

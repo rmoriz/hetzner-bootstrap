@@ -1,7 +1,8 @@
 AllCops:
-  TargetRubyVersion: 2.6
+  TargetRubyVersion: 3.0
+  NewCops: enable
 
-Metrics/LineLength:
+Layout/LineLength:
   Enabled: false
 
 Metrics/MethodLength:
@@ -12,9 +13,6 @@ Naming/FileName:
 
 Style/Documentation:
   Enabled: false
-
-Layout/IndentHeredoc:
-  EnforcedStyle: squiggly
 
 Metrics/ClassLength:
   Enabled: false

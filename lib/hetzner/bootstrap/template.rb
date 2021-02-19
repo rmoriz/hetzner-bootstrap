@@ -14,9 +14,10 @@ module Hetzner
         #
         # also run:   $ installimage -h
         #
-        if param.is_a? Hetzner::Bootstrap::Template
+        case param
+        when Hetzner::Bootstrap::Template
           param
-        elsif param.is_a? String
+        when String
           @raw_template = param
         end
       end

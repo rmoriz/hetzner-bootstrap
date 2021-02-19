@@ -8,19 +8,8 @@ require 'timeout'
 module Hetzner
   class Bootstrap
     class Target
-      attr_accessor :ip
-      attr_accessor :login
-      attr_accessor :password
-      attr_accessor :template
-      attr_accessor :rescue_os
-      attr_accessor :rescue_os_bit
-      attr_accessor :actions
-      attr_accessor :hostname
-      attr_writer   :post_install
-      attr_writer   :post_install_remote
-      attr_accessor :public_keys
-      attr_accessor :bootstrap_cmd
-      attr_accessor :logger
+      attr_accessor :ip, :login, :password, :template, :rescue_os, :rescue_os_bit, :actions, :hostname, :public_keys, :bootstrap_cmd, :logger
+      attr_writer :post_install, :post_install_remote
 
       def initialize(options = {})
         @rescue_os           = 'linux'
@@ -215,13 +204,11 @@ module Hetzner
         @logger.formatter = default_log_formatter
       end
 
-      def remote(options = {})
+      def remote(options = {}, &block)
         default = { verify_host_key: :never, password: @password }
         default.merge! options
 
-        Net::SSH.start(@ip, @login, default) do |ssh|
-          yield ssh
-        end
+        Net::SSH.start(@ip, @login, default, &block)
       end
 
       def local
@@ -246,8 +233,11 @@ module Hetzner
       end
 
       class NoTemplateProvidedError < ArgumentError; end
+
       class CantActivateRescueSystemError < StandardError; end
+
       class CantResetSystemError < StandardError; end
+
       class InstallationError < StandardError; end
     end
   end
